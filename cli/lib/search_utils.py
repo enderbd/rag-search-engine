@@ -6,6 +6,7 @@ DEFAULT_SEARCH_LIMIT = 5
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 DATA_PATH = PROJECT_ROOT.joinpath("data", "movies.json")
 STOPWORDS_PATH = PROJECT_ROOT.joinpath("data", "stopwords.txt")
+CACHE_ROOT = PROJECT_ROOT.joinpath("cache")
 
 
 def load_movies() -> list[dict]:

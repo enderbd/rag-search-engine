@@ -1,8 +1,48 @@
+import pickle
 import string
 
 from nltk.stem import PorterStemmer
 
-from .search_utils import DEFAULT_SEARCH_LIMIT, load_movies, load_stopwords
+from .search_utils import CACHE_ROOT, DEFAULT_SEARCH_LIMIT, load_movies, load_stopwords
+
+
+class InvertedIndex:
+    def __init__(self):
+        self.index = {}
+        self.docmap = {}
+
+    def __add_document(self, doc_id, text):
+        document_tokens = tokenize_text(text)
+        for word in document_tokens:
+            if word not in self.index:
+                self.index[word] = set()
+            self.index[word].add(doc_id)
+
+    def get_documents(self, term):
+        if term.lower() in self.index.keys():
+            return sorted(list(self.index[term.lower()]))
+        return []
+
+    def build(self, movies):
+        for movie in movies:
+            doc_id = movie["id"]
+            text = f"{movie['title']} {movie['description']}"
+            self.__add_document(doc_id, text)
+            self.docmap[doc_id] = movie
+
+    def save(self):
+        cache_folder = CACHE_ROOT
+        if not cache_folder.is_dir():
+            cache_folder.mkdir()
+
+        index_file = cache_folder.joinpath("index.pkl")
+        docmap_file = cache_folder.joinpath("docmap.pkl")
+
+        with open(index_file, "wb") as f:
+            pickle.dump(self.index, f)
+
+        with open(docmap_file, "wb") as f:
+            pickle.dump(self.docmap, f)
 
 
 def search_command(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> list[dict]:
@@ -17,6 +57,13 @@ def search_command(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> list[dict]:
             if len(results) >= limit:
                 break
     return results
+
+
+def build_command() -> None:
+    movies = load_movies()
+    idx = InvertedIndex()
+    idx.build(movies)
+    idx.save()
 
 
 def preprocess_text(text: str) -> str:
