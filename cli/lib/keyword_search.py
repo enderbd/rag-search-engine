@@ -44,18 +44,53 @@ class InvertedIndex:
         with open(docmap_file, "wb") as f:
             pickle.dump(self.docmap, f)
 
+    def load(self):
+        cache_folder = CACHE_ROOT
+
+        index_file = cache_folder.joinpath("index.pkl")
+        if not index_file.exists():
+            raise FileNotFoundError(
+                "Could not find a saved file for the index, you need to build first"
+            )
+        docmap_file = cache_folder.joinpath("docmap.pkl")
+        if not docmap_file.exists():
+            raise FileNotFoundError(
+                "Could not find a saved file for the docmap, you need to build first"
+            )
+
+        with open(index_file, "rb") as f:
+            self.index = pickle.load(f)
+
+        with open(docmap_file, "rb") as f:
+            self.docmap = pickle.load(f)
+
 
 def search_command(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> list[dict]:
-    movies = load_movies()
-    results = []
-    if movies:
-        for movie in movies:
-            query_tokens = tokenize_text(query)
-            title_tokens = tokenize_text(movie["title"])
-            if has_matching_token(query_tokens, title_tokens):
-                results.append(movie)
-            if len(results) >= limit:
+    idx = InvertedIndex()
+    try:
+        idx.load()
+    except FileNotFoundError:
+        print("Could not find saved index files. Please run the build command first.")
+        exit(1)
+
+    id_results = []
+
+    query_tokens = tokenize_text(query)
+    for token in query_tokens:
+        docs = idx.get_documents(token)
+        for doc_id in docs:
+            if doc_id in id_results:
+                continue
+            id_results.append(doc_id)
+            if len(id_results) >= limit:
                 break
+
+        if len(id_results) >= limit:
+            break
+
+    results = []
+    for id in id_results[:limit]:
+        results.append(idx.docmap[id])
     return results
 
 
@@ -83,6 +118,7 @@ def has_matching_token(query_tokens: list[str], title_tokens: list[str]) -> bool
 def tokenize_text(text: str) -> list[str]:
     text = preprocess_text(text)
     tokens = text.split()
+
     valid_tokens = []
     for token in tokens:
         if token:
