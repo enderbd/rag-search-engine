@@ -13,6 +13,8 @@ DATA_PATH = PROJECT_ROOT.joinpath("data", "movies.json")
 STOPWORDS_PATH = PROJECT_ROOT.joinpath("data", "stopwords.txt")
 CACHE_ROOT = PROJECT_ROOT.joinpath("cache")
 
+DEFAULT_CHUNK_SIZE = 200
+
 
 def load_movies() -> list[dict]:
     movies_data = None
