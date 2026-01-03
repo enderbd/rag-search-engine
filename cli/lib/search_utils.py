@@ -14,6 +14,10 @@ STOPWORDS_PATH = PROJECT_ROOT.joinpath("data", "stopwords.txt")
 CACHE_ROOT = PROJECT_ROOT.joinpath("cache")
 
 DEFAULT_CHUNK_SIZE = 200
+DEFAULT_CHUNK_OVERLAP = 0
+DEFAULT_SEMANTIC_CHUNK_SIZE = 4
+
+DOCUMENT_PREVIEW_LENGTH = 100
 
 
 def load_movies() -> list[dict]:
