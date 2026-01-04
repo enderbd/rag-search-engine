@@ -295,7 +295,7 @@ def search_chunked_command(query: str, limit: int) -> None:
     chunk_semantic_instance.load_or_create_chunk_embeddings(movies)
     results = chunk_semantic_instance.search_chunks(query, limit)
 
-    for i, res in enumerate(results):
+    for i, res in enumerate(results, 1):
         print(f"\n{i}. {res['title']} (score: {res['score']:.4f})")
         print(f"   {res['document']}...")
 
