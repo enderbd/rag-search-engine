@@ -9,6 +9,8 @@ DEFAULT_ALPHA = 0.5
 BM25_K1 = 1.5
 BM25_B = 0.75
 
+RRF_K = 60
+
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 DATA_PATH = PROJECT_ROOT.joinpath("data", "movies.json")
 STOPWORDS_PATH = PROJECT_ROOT.joinpath("data", "stopwords.txt")

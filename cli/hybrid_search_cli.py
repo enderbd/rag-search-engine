@@ -1,6 +1,10 @@
 import argparse
 
-from lib.hybrid_search import normalize_scores, weighted_search_command
+from lib.hybrid_search import (
+    normalize_scores,
+    weighted_search_command,
+    rrf_search_command,
+)
 
 
 def main() -> None:
@@ -28,6 +32,19 @@ def main() -> None:
         "--limit", type=int, default=5, help="Number of results to return (default=5)"
     )
 
+    rrf_search_parser = subparsers.add_parser(
+        "rrf-search", help="Perform weighted hybrid search"
+    )
+    rrf_search_parser.add_argument("query", type=str, help="Search query")
+    rrf_search_parser.add_argument(
+        "-k",
+        type=int,
+        default=60,
+        help="The k parameter (a constant) controls how much more weight we give to higher-ranked results vs. lower-ranked ones.",
+    )
+    rrf_search_parser.add_argument(
+        "--limit", type=int, default=5, help="Number of results to return (default=5)"
+    )
     args = parser.parse_args()
 
     match args.command:
@@ -52,11 +69,29 @@ def main() -> None:
                 print(f"{i}. {res['title']}")
                 print(f"   Hybrid Score: {res.get('score', 0):.3f}")
                 metadata = res.get("metadata", {})
+                ranks = []
                 if "bm25_score" in metadata and "semantic_score" in metadata:
                     print(
                         f"   BM25: {metadata['bm25_score']:.3f}, Semantic: {
                             metadata['semantic_score']:.3f}"
                     )
+                print(f"   {res['document'][:100]}...")
+                print()
+        case "rrf-search":
+            results = rrf_search_command(args.query, args.k, args.limit)
+
+            print(f"RRF search Results for '{args.query}' using a factor (k={args.k}):")
+            for i, res in enumerate(results, 1):
+                print(f"{i}. {res['title']}")
+                print(f"   RRF Score: {res.get('score', 0):.3f}")
+                metadata = res.get("metadata", {})
+                ranks = []
+                if metadata.get("bm25_rank") > 0:
+                    ranks.append(f"BM25 Rank: {metadata['bm25_rank']}")
+                if metadata.get("semantic_rank") > 0:
+                    ranks.append(f"Semantic Rank: {metadata['semantic_rank']}")
+                if ranks:
+                    print(f"   {', '.join(ranks)}")
                 print(f"   {res['document'][:100]}...")
                 print()
         case _:
