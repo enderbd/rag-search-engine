@@ -45,6 +45,13 @@ def main() -> None:
     rrf_search_parser.add_argument(
         "--limit", type=int, default=5, help="Number of results to return (default=5)"
     )
+    rrf_search_parser.add_argument(
+        "--enhance",
+        type=str,
+        choices=["spell", "rewrite"],
+        help="Query enhancement method",
+    )
+
     args = parser.parse_args()
 
     match args.command:
@@ -78,17 +85,28 @@ def main() -> None:
                 print(f"   {res['document'][:100]}...")
                 print()
         case "rrf-search":
-            results = rrf_search_command(args.query, args.k, args.limit)
+            result = rrf_search_command(args.query, args.k, args.enhance, args.limit)
 
-            print(f"RRF search Results for '{args.query}' using a factor (k={args.k}):")
-            for i, res in enumerate(results, 1):
+            if result["enhanced_query"]:
+                print(
+                    f"Enhanced query ({result['enhance_method']}): '{
+                        result['original_query']
+                    }' -> '{result['enhanced_query']}'\n"
+                )
+            print(
+                f"Reciprocal Rank Fusion Results for '{result['query']}' (k={
+                    result['k']
+                }):"
+            )
+
+            for i, res in enumerate(result["results"], 1):
                 print(f"{i}. {res['title']}")
                 print(f"   RRF Score: {res.get('score', 0):.3f}")
                 metadata = res.get("metadata", {})
                 ranks = []
-                if metadata.get("bm25_rank") > 0:
+                if metadata.get("bm25_rank"):
                     ranks.append(f"BM25 Rank: {metadata['bm25_rank']}")
-                if metadata.get("semantic_rank") > 0:
+                if metadata.get("semantic_rank"):
                     ranks.append(f"Semantic Rank: {metadata['semantic_rank']}")
                 if ranks:
                     print(f"   {', '.join(ranks)}")
