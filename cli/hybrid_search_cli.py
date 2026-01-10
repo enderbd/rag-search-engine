@@ -45,6 +45,12 @@ def main() -> None:
     rrf_search_parser.add_argument(
         "--limit", type=int, default=5, help="Number of results to return (default=5)"
     )
+
+    rrf_search_parser.add_argument(
+        "--evaluate",
+        action="store_true",
+        help="Add an optional flag to evaluate the search results.",
+    )
     rrf_search_parser.add_argument(
         "--enhance",
         type=str,
@@ -139,6 +145,11 @@ def main() -> None:
                 print()
         case _:
             parser.print_help()
+    print("""
+    Expecting stdout to contain all of:
+/3
+The Berenstain Bears' Christmas Tree
+    """)
 
 
 if __name__ == "__main__":

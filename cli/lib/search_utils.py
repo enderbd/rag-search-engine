@@ -16,6 +16,7 @@ PROJECT_ROOT = Path(__file__).parent.parent.parent
 DATA_PATH = PROJECT_ROOT.joinpath("data", "movies.json")
 STOPWORDS_PATH = PROJECT_ROOT.joinpath("data", "stopwords.txt")
 CACHE_ROOT = PROJECT_ROOT.joinpath("cache")
+GOLDEN_DATASET_PATH = PROJECT_ROOT.joinpath("data", "golden_dataset.json")
 
 DEFAULT_CHUNK_SIZE = 200
 DEFAULT_CHUNK_OVERLAP = 0
@@ -61,3 +62,8 @@ def format_search_result(
         "score": round(score, SCORE_PRECISION),
         "metadata": metadata if metadata else {},
     }
+
+
+def load_golden_dataset() -> dict:
+    with open(GOLDEN_DATASET_PATH, "r") as f:
+        return json.load(f)
